@@ -30,8 +30,10 @@ A link will be produced that includes the following info:
 The cipher is computed as:
 
 ```
-aes(secret, password + expiration key)
+aes(aes(secret, password), expiration key)
 ```
+
+The user secret is first encrypted locally using javascript. This first cipher is encrypted again on the server using an expiration key.
 
 When a user wants to read a shared secret, they will need to enter the password (assisted by the password hint). In the meantime the server uses the identifier to find an expiration key. With those combined the secret can be shown.  
 In case the token has been expired and was deleted, the link can no longer work.
