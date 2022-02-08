@@ -1,0 +1,8 @@
+# Deny all files, except the index
+
+Order deny,allow
+Deny from all
+
+<Files "index.php">
+    Allow from all
+</Files>
