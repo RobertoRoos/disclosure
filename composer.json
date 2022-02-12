@@ -1,0 +1,19 @@
+{
+    "name": "robert/disclosure",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Roberto-R",
+            "email": "robert.soor@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/",
+            "Console\\": "bin/"
+        }
+    },
+    "require": {
+        "ext-mysqli": "*"
+    }
+}
