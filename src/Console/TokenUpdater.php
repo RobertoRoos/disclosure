@@ -67,7 +67,7 @@ class TokenUpdater
 
         $datetime_last = $this->roundDateTime($datetime_last);
 
-        echo "Last token expires on {$datetime_last->format(DateTime::ISO8601)}\n";
+        echo "Last existing token expires on {$datetime_last->format(DateTime::ISO8601)}\n";
 
         $number_new_tokens = $this->config['max_number_tokens'] - $current_tokens;
 
@@ -77,8 +77,6 @@ class TokenUpdater
         }
 
         $step = new DateInterval("PT" . $this->config['hours_between_tokens'] . "H");
-
-        $sql_update = "";
 
         $statement = Database::get()->prepare(
             "INSERT INTO tokens (identifier, token, expiration) VALUES (?, ?, ?)"
@@ -101,6 +99,8 @@ class TokenUpdater
         }
 
         echo "Created $number_new_tokens new tokens!\n";
+
+        echo "Last new token expires on {$datetime_last->format(DateTime::ISO8601)}\n";
 
         return 0;
     }

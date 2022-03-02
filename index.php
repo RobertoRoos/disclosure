@@ -1,24 +1,26 @@
 <?php
 
-if (!empty($_POST)) {
+require_once __DIR__ . "/vendor/autoload.php";
 
-    $error = "";
-    if (!isset($_POST['secret_cipher']) || !isset($_POST['expiration'])) {
-        $error = "Missing cipher or expiration from client";
-    } else {
-        var_dump($_POST);
-    }
-}
+use App\Controller\IndexController;
+
+$controller = new IndexController($_SERVER, $_POST);
+
+$controller->load();
+
+$errors = $controller->getVar("errors");
+$url = $controller->getVar("url");
+$secret_cipher = $controller->getVar("secret_cipher");
 
 ?>
 
-<!doctype html>
+<!DOCTYPE html>
 <html class="no-js" lang="en" dir="ltr">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Foundation for Sites</title>
+    <title>Disclosure</title>
     <link rel="stylesheet" href="css/foundation.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -32,21 +34,67 @@ if (!empty($_POST)) {
     </div>
 
     <div class="grid-x grid-padding-x">
+
+        <?php if ($secret_cipher): ?>
+            <div class="large-12 cell">
+                <div class="callout small secondary">
+
+                    <h5>Enter encryption password to decode the URL:</h5>
+
+                    <form id="decrypt-form" method="get">
+
+                        <div class="grid-x grid-padding-x">
+                            <div class="large-12 cell">
+                                <label>Password</label>
+                                <input type="password" id="decrypt-password" required/>
+                            </div>
+                        </div>
+
+                        <input type="hidden" id="secret-cipher" value="<?= base64_encode($secret_cipher) ?>"/>
+
+                        <button type="submit" class="button primary">Decrypt URL</button>
+
+                        <textarea rows="3" id="secret-result" readonly></textarea>
+
+                    </form>
+
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($url): ?>
+        <div class="large-12 cell">
+            <div class="callout small success">
+                <p>
+                    Your secret URL, with limited expiration:<br>
+                    <a href="<?= $url ?>"><?= $url ?></a>
+                </p>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <div class="large-12 cell">
             <div class="callout">
+
+                <?php foreach ($errors as $error): ?>
+                    <div class="callout small alert">
+                        <p>Error: <?= $error ?></p>
+                    </div>
+                <?php endforeach; ?>
+
                 <h5>Create a new secret share:</h5>
 
                 <div class="grid-x grid-padding-x">
                     <div class="large-12 cell">
                         <label>Secret</label>
-                        <textarea rows="3" id="secret"></textarea>
+                        <textarea rows="3" id="secret" required></textarea>
                     </div>
                 </div>
 
                 <div class="grid-x grid-padding-x">
                     <div class="large-12 cell">
                         <label>Password</label>
-                        <input type="password" id="password"/>
+                        <input type="password" id="password" required/>
                     </div>
                 </div>
 
@@ -62,8 +110,16 @@ if (!empty($_POST)) {
                     <div class="grid-x grid-padding-x">
                         <div class="large-12 cell">
                                 <label>Expiration</label>
-                                <input type="text" name="expiration"/>
-                            </div>
+                                <select name="expiration">
+                                    <?php
+                                    foreach ($controller->getVar('tokens') as $token) {
+                                        $ident = $token['identifier'];
+                                        $datetime = $token['expiration'];
+                                        echo "<option value=$ident>$datetime</option>\n";
+                                    }
+                                    ?>
+                                </select>
+                        </div>
                     </div>
 
                     <input type="hidden" name="secret_cipher" id="secret_cipher"/>
