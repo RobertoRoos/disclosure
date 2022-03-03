@@ -12,6 +12,7 @@ class IndexController extends Controller
 {
 
     const CIPHER = "aes-256-cbc";
+    static $IV_LENGTH = 0;
 
     /** @var string[] Page error messages */
     private $errors = [];
@@ -46,11 +47,23 @@ class IndexController extends Controller
                 $this->getQuery('crypt'),
                 $this->getQuery('expiration')
             );
+
+            if ($secret_cipher === "") {
+                $this->errors[] = "Failed to analyse encrypted URL";
+            }
         }
 
         $this->setVar("errors", $this->errors);
         $this->setVar("url", $url);
         $this->setVar("secret_cipher", $secret_cipher);
+
+        $hint_encoded = $this->getQuery("hint");
+        if ($hint_encoded) {
+            $hint = base64_decode(urldecode($hint_encoded));
+        } else {
+            $hint = false;
+        }
+        $this->setVar("password_hint", $hint);
     }
 
     /**
@@ -101,8 +114,10 @@ class IndexController extends Controller
      *
      * The flow of variables and their types are:
      *      User secret [text]
+     *          > Cipher 1 [binary] (CryptoJS)
      *          > Cipher 1 [text, base64] (CryptoJS)
-     *              > Cipher 2 [text, hex] (openssl_encrypt)
+     *              > Cipher 2 [binary] (openssl_encrypt)
+     *              > Cipher 2 [text, hex] (bin2hex)
      *
      * @param string $secret_cipher User's secret, already encrypted by password
      * @param string $expiration Identifier of expiration token
@@ -124,17 +139,16 @@ class IndexController extends Controller
         }
 
         // Generate an initialization vector
-        $iv_size = openssl_cipher_iv_length(self::CIPHER);
-        $iv = openssl_random_pseudo_bytes($iv_size);
+        $iv = openssl_random_pseudo_bytes(self::$IV_LENGTH);
 
         $cipher = openssl_encrypt($secret_cipher, self::CIPHER, $token, 0, $iv);
 
         $url = "https://" . $this->getHost() . $this->getUrl() . "?" .
-            "crypt=" . bin2hex($cipher) .
+            "crypt=" . bin2hex($iv . $cipher) .
             "&expiration=" . $expiration;
 
         if ($hint) {
-            $url .= "&hint=" . base64_encode($hint);
+            $url .= "&hint=" . urlencode(base64_encode($hint));
         }
 
         return $url;
@@ -163,10 +177,20 @@ class IndexController extends Controller
             return false;
         }
 
-        $iv_size = openssl_cipher_iv_length(self::CIPHER);
-        $iv = openssl_random_pseudo_bytes($iv_size);
+        $cipher_salt_bin = hex2bin($cipher);
 
-        return openssl_decrypt(hex2bin($cipher), self::CIPHER, $token, 0, $iv);
+        $iv = substr($cipher_salt_bin, 0, self::$IV_LENGTH);
+        $cipher_bin = substr($cipher_salt_bin, self::$IV_LENGTH);
+
+        $secret = openssl_decrypt($cipher_bin, self::CIPHER, $token, 0, $iv);
+
+        if (!$secret) {
+            $secret = "";
+        }
+
+        return $secret;
     }
 
 }
+
+IndexController::$IV_LENGTH = openssl_cipher_iv_length(IndexController::CIPHER);

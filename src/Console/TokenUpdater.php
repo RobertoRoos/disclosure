@@ -85,7 +85,7 @@ class TokenUpdater
         for ($i = 0; $i < $number_new_tokens; $i++) {
             $datetime_last->add($step);
 
-            $identifier = $this->getRandomString();
+            $identifier = $this->getRandomString(16);
             $token = $this->getRandomString();
             $expiration = $datetime_last->format("Y-m-d H:i:s");
 

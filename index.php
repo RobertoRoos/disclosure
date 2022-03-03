@@ -11,6 +11,7 @@ $controller->load();
 $errors = $controller->getVar("errors");
 $url = $controller->getVar("url");
 $secret_cipher = $controller->getVar("secret_cipher");
+$password_hint = $controller->getVar("password_hint");
 
 ?>
 
@@ -43,6 +44,12 @@ $secret_cipher = $controller->getVar("secret_cipher");
 
                     <form id="decrypt-form" method="get">
 
+                        <?php if ($password_hint) : ?>
+                        <p>
+                            Hint: <i><?= $password_hint ?></i>
+                        </p>
+                        <?php endif; ?>
+
                         <div class="grid-x grid-padding-x">
                             <div class="large-12 cell">
                                 <label>Password</label>
@@ -50,7 +57,7 @@ $secret_cipher = $controller->getVar("secret_cipher");
                             </div>
                         </div>
 
-                        <input type="hidden" id="secret-cipher" value="<?= base64_encode($secret_cipher) ?>"/>
+                        <input type="hidden" id="secret-cipher" value="<?= $secret_cipher ?>"/>
 
                         <button type="submit" class="button primary">Decrypt URL</button>
 
