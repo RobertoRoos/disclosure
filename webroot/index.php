@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . "/vendor/autoload.php";
+require_once __DIR__ . "/../vendor/autoload.php";
 
 use App\Controller\IndexController;
 
@@ -22,8 +22,8 @@ $password_hint = $controller->getVar("password_hint");
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Disclosure</title>
-    <link rel="stylesheet" href="css/foundation.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../css/foundation.min.css">
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 
@@ -140,11 +140,11 @@ $password_hint = $controller->getVar("password_hint");
 </div>
 
 
-<script src="js/vendor/jquery.js"></script>
-<script src="js/vendor/what-input.js"></script>
-<script src="js/vendor/foundation.js"></script>
+<script src="../js/vendor/jquery.js"></script>
+<script src="../js/vendor/what-input.js"></script>
+<script src="../js/vendor/foundation.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js" integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="js/app.js"></script>
+<script src="../js/app.js"></script>
 
 </body>
 </html>

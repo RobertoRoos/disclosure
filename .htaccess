@@ -1,0 +1,9 @@
+# Redirect all requests to the `webroot` directoty, to hide all other source files
+# The condition prevents a loop where `webroot` is prepended multiple types - I am not sure why it is necessary,
+# the side-effect is that URIs with the phase 'webroot' are not allowed now
+
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    RewriteCond %{REQUEST_URI} !/webroot/
+    RewriteRule ^(.*)$ webroot/$1 [L]
+</IfModule>
