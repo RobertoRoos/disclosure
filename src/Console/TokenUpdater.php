@@ -86,7 +86,7 @@ class TokenUpdater
             $datetime_last->add($step);
 
             $identifier = $this->getRandomString(16);
-            $token = $this->getRandomString();
+            $token = $this->getRandomString(64);
             $expiration = $datetime_last->format("Y-m-d H:i:s");
 
             $statement->bind_param("sss", $identifier, $token, $expiration);
@@ -129,7 +129,15 @@ class TokenUpdater
      * @return string
      * @throws Exception If source of randomness could not be found
      */
-    protected function getRandomString(int $n = 64): string {
-        return bin2hex(random_bytes($n));
+    protected function getRandomString(int $n): string {
+
+        $n_half = ceil($n / 2);
+        $str = bin2hex(random_bytes($n_half)); // Byte is written as two hex characters
+
+        if (2 * $n_half != $n) {
+            $str = substr($str, 0, -1);
+        }
+
+        return $str;
     }
 }
