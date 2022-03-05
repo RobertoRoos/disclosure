@@ -72,19 +72,11 @@ class IndexController extends Controller
      */
     private function getTokens(): array {
 
-        try {
+        $result = Database::get()->query(
+            "SELECT identifier, expiration FROM tokens WHERE expiration > NOW() ORDER BY expiration"
+        );
 
-            $result = Database::get()->query(
-                "SELECT identifier, expiration FROM tokens WHERE expiration > NOW() ORDER BY expiration"
-            );
-
-            $tokens = $result->fetch_all(MYSQLI_ASSOC);
-
-        } catch (Exception $e) {
-            return ["Error" => $e->getMessage()];
-        }
-
-        return $tokens;
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
 
     /**

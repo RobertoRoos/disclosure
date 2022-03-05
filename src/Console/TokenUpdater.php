@@ -26,7 +26,7 @@ class TokenUpdater
 
         if ($_argc < 3 || empty($_argv[1]) || empty($_argv[2])) {
 
-            echo "Usage: update_tokens.php [number of hours between tokens] [number of tokens in the future]";
+            echo "Usage: update_tokens.php [number of hours between tokens] [number of tokens in the future]\n";
             exit(0);
         }
 

@@ -3,7 +3,9 @@
 namespace App;
 
 use Exception;
+use mysqli_driver;
 use mysqli;
+use mysqli_sql_exception;
 
 /**
  * Database helper class
@@ -42,6 +44,8 @@ class Database {
         $config = include(__DIR__ . "/../config/app.php");
         $config = $config['database'];
 
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
         self::$mysqli = new mysqli(
             $config['host'],
             $config['username'],
@@ -49,9 +53,5 @@ class Database {
             $config['database'],
             $config['port']
         );
-
-        if (self::$mysqli->connect_error) {
-            throw new Exception("Failed to connect to database: " . self::$mysqli->error);
-        }
     }
 }
