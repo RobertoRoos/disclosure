@@ -13,17 +13,15 @@ $(document).ready(function() {
         var secret = $("textarea#secret").val();
         var password = $("input#password").val();
 
-        var ciphertext = "";
+        var cipher1text = "";
 
         if (password) {
-            var cipher = CryptoJS.AES.encrypt(secret, password);
+            var cipher1 = CryptoJS.AES.encrypt(secret, password);
 
-            ciphertext = cipher.toString();
-
-            console.log(ciphertext);
+            cipher1text = cipher1.toString();
         }
 
-        $("input#secret_cipher").val(ciphertext);
+        $("input#secret_cipher").val(cipher1text);
 
         // Continue form POST as normal because the secret and password fields are
         // outside the form.
@@ -37,13 +35,11 @@ $(document).ready(function() {
         e.preventDefault(); // No HTTP request
 
         var password = $("input#decrypt-password").val();
-        var ciphertext = $("input#secret-cipher").val();
-
-        console.log(ciphertext);
+        var cipher1text = $("input#secret-cipher").val();
 
         if (password) {
 
-            var decrypted = CryptoJS.AES.decrypt(ciphertext, password)
+            var decrypted = CryptoJS.AES.decrypt(cipher1text, password)
 
             var secret;
             try {

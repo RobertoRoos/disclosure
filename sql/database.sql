@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 09, 2022 at 06:54 PM
+-- Generation Time: Mar 05, 2022 at 01:16 PM
 -- Server version: 10.4.6-MariaDB
 -- PHP Version: 7.3.9
 
@@ -30,8 +30,9 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `tokens` (
   `id` int(11) NOT NULL,
-  `identifier` varchar(64) NOT NULL,
-  `token` varchar(64) NOT NULL
+  `identifier` varchar(16) NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `expiration` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --

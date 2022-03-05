@@ -112,21 +112,23 @@ class IndexController extends Controller
     /**
      * Make disclosure URL
      *
+     * The link contains the salted cipher, the expiration identifier and the password hint.
+     *
      * The flow of variables and their types are:
      *      User secret [text]
      *          > Cipher 1 [binary] (CryptoJS)
      *          > Cipher 1 [text, base64] (CryptoJS)
-     *              > Cipher 2 [binary] (openssl_encrypt)
-     *              > Cipher 2 [text, hex] (bin2hex)
+     *              > Cipher 2 [text, base64] (openssl_encrypt)
+     *              > Cipher 2 + salt [text, hex + base64]
      *
-     * @param string $secret_cipher User's secret, already encrypted by password
+     * @param string $cipher1    User's secret, already encrypted by password
      * @param string $expiration Identifier of expiration token
-     * @param string $hint Defaults to empty
+     * @param string $hint       Defaults to empty
      * @return string|false Full based URL - False on error
      */
-    private function makeEncryptedUrl(string $secret_cipher, string $expiration, string $hint = "") {
+    private function makeEncryptedUrl($cipher1, $expiration, $hint = "") {
 
-        if (empty($secret_cipher) || empty($expiration)) {
+        if (empty($cipher1) || empty($expiration)) {
             $this->errors[] = "Missing cipher or expiration from client";
             return false;
         }
@@ -141,10 +143,14 @@ class IndexController extends Controller
         // Generate an initialization vector
         $iv = openssl_random_pseudo_bytes(self::$IV_LENGTH);
 
-        $cipher = openssl_encrypt($secret_cipher, self::CIPHER, $token, 0, $iv);
+        // Output of encrypt is a base64 encoded string
+        $cipher2 = openssl_encrypt($cipher1, self::CIPHER, $token, 0, $iv);
+
+        $cipher2_salted = urlencode(bin2hex($iv) . $cipher2);
+        // $iv is a bytes string, encode in hex
 
         $url = "https://" . $this->getHost() . $this->getUrl() . "?" .
-            "crypt=" . bin2hex($iv . $cipher) .
+            "crypt=" . $cipher2_salted .
             "&expiration=" . $expiration;
 
         if ($hint) {
@@ -157,15 +163,18 @@ class IndexController extends Controller
     /**
      * Decrypt the components of an incoming URL and return the secret (encrypted still by the user password)
      *
-     * @param string $cipher Cipher, encrypted by expiration token
+     * Returned string is false when information was missing and "" in case it could not be decrypted.
+     *
+     * @see makeEncryptedUrl
+     * @param string $cipher2    Cipher, encrypted by expiration token
      * @param string $expiration Identifier of expiration token
      * @return string|false
      */
-    public function decryptUrl($cipher, $expiration) {
+    public function decryptUrl($cipher2, $expiration) {
 
-        if (empty($cipher) && empty($expiration)) {
+        if (empty($cipher2) && empty($expiration)) {
             return false; // Quietly return
-        } elseif (empty($cipher) || empty($expiration)) {
+        } elseif (empty($cipher2) || empty($expiration)) {
             $this->errors[] = "Missing cipher or expiration in URL";
             return false;
         }
@@ -177,18 +186,17 @@ class IndexController extends Controller
             return false;
         }
 
-        $cipher_salt_bin = hex2bin($cipher);
+        $iv_size_hex = self::$IV_LENGTH * 2; // Because encoded in hex
+        $iv = hex2bin(substr($cipher2, 0, $iv_size_hex));
+        $cipher_bin = substr($cipher2, $iv_size_hex);
 
-        $iv = substr($cipher_salt_bin, 0, self::$IV_LENGTH);
-        $cipher_bin = substr($cipher_salt_bin, self::$IV_LENGTH);
+        $cipher1 = openssl_decrypt($cipher_bin, self::CIPHER, $token, 0, $iv);
 
-        $secret = openssl_decrypt($cipher_bin, self::CIPHER, $token, 0, $iv);
-
-        if (!$secret) {
-            $secret = "";
+        if (!$cipher1) {
+            $cipher1 = "";
         }
 
-        return $secret;
+        return $cipher1;
     }
 
 }
